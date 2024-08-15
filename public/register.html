@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center">Registration</h2>
+        <form id="registrationForm">
+            <div class="group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username">
+                <div class="error_message" id="usernameError"></div>
+            </div>
+            <div class="group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email">
+                <div class="error_message" id="emailError"></div>
+            </div>
+            <div class="group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone">
+                <div class="error_message" id="phoneError"></div>
+            </div>
+            <div style="text-align: center">
+                <button type="submit", name="submit">Register</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', async function (event) {
+            // Prevent form submission
+            event.preventDefault();
+
+            // Clear previous error messages
+            document.querySelectorAll('.error_message').forEach(el => el.textContent = '');
+            const username = document.getElementById('username');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const usernameValue = username.value.trim();
+            const emailValue = email.value.trim();
+            const phoneValue = phone.value.trim();
+
+            if (usernameValue == '') {
+                document.getElementById('usernameError').textContent = 'Username is required.';
+            } else if (usernameValue.length < 3) {
+                document.getElementById('usernameError').textContent = 'Username must be at least 3 characters.';
+            } else {
+                document.getElementById('usernameError').textContent = '';
+            }
+
+            if (emailValue == '') {
+                document.getElementById('emailError').textContent = 'Email is required.';
+            } else if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailValue) == false) {
+                document.getElementById('emailError').textContent = 'Email Address is invalid.';
+            } else {
+                document.getElementById('emailError').textContent = '';
+            }
+
+            if (phoneValue == '') {
+                document.getElementById('phoneError').textContent = 'Phone number is required.';
+            } else {
+                document.getElementById('phoneError').textContent = '';
+            }
+
+            // Gather form data
+            const formData = {
+                username: username.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim()
+            };
+
+            try {
+                // Send data to the server for validation
+                const response = await fetch('/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Successful response
+                    //alert('Form submitted successfully!');
+                    // Optionally, redirect or reset the form
+                    window.location.href = 'successPage.html';
+                } else {
+                    // Display errors
+                    if (result.errors) {
+                        if (result.errors.username) {
+                            document.getElementById('usernameError').textContent = result.errors.username;
+                        }
+                        if (result.errors.email) {
+                            document.getElementById('emailError').textContent = result.errors.email;
+                        }
+                        if (result.errors.phone) {
+                            document.getElementById('phoneError').textContent = result.errors.phone;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        });
+    </script>
+</body>
+</html>
